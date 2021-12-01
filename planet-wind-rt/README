@@ -2,3 +2,9 @@ Utilities and software to compute transit spectra from Athena++ simulations of e
 
 Example usage:
 python /Users/morganmacleod/Dropbox/PlanetWind/Analysis/planet-wind-rt/Planet_Wind_Ray_Star_Origin23.py --base_dir ./ --level 3 --N_mc 3000 --N_raypoints 200 --angles 0.06 --snapshot PW_W107.out1.00030.athdf --scale 0.25
+
+v24 (as in revised paper):
+python /Users/morganmacleod/Dropbox/PlanetWind/Analysis/planet-wind-rt/Planet_Wind_Ray_Star_Origin24.py --base_dir ./ --level 3 --N_radial 100 --f_raystep 0.05  --angles 0.06 --snapshot PW_W107.out1.00030.athdf --scale 0.2
+
+
+Other example scripts are in the example folders, these are the scripts used to produce the data represented in the publication. 
