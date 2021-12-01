@@ -156,6 +156,7 @@ def MC_ray(dart):
                      azim_angle=azim_angle,
                      pol_angle=0.0,
                      rstar=rad_star,
+                     rplanet=rp,
                      npoints=nraypoints,
                      inner_lim=in_lim,
                      outer_lim=out_lim)
@@ -347,7 +348,7 @@ def get_Parker_rho_v_func(r_out=1.e11, num=1000):
 
     for i in range(num):
         if i > 0:
-            vguess = 1.01*res_v[i-1]
+            vguess = 1.001*res_v[i-1]
         res_v[i] = newton(parker_fv, vguess, args=(r[i],))
         res_rho[i] = parker_frho(r[i], res_v[i])
 
@@ -468,14 +469,20 @@ print('time to read file:', time.time() - start_read_time)
 
 ################################################################
 
-rad_star = 7.0e+10
+rad_star = 4.67e10 #7.0e+10
 
-Omega_orb = 1.28241e-05
-omega_planet = Omega_orb
-a = 8.228e+11
+#Omega_orb = 1.28241e-05
+#omega_planet = Omega_orb
+#a = 8.228e+11
 rp = 6.72e9
 m1 = orb['m1'][0]
 m2 = orb['m2'][0]
+a = orb['sep'][0]  ## THIS IS ONLY TRUE IN THE CIRCULAR LIMIT! 
+Omega_orb = np.sqrt(a**3/(6.674e-8*(m1+m2)))
+omega_planet = Omega_orb
+
+print("a = ", a, " Omega_orb = ", Omega_orb)
+
 d2 = np.sqrt((d['x']-x2)**2 + (d['y']-y2)**2 + (d['z']-z2)**2)
 
 dr = np.broadcast_to(d['x1f'][1:]-d['x1f'][0:-1],
@@ -503,6 +510,11 @@ d['vy'] = d['vy']+Omega_orb*d['x']
 rhoplanet=1.0e-24
 d['rho']  = np.where(d2 < rp,rhoplanet,d['rho'])
 d['press']= np.where(d2 < rp,6.67e-8*m2/5.*rhoplanet,d['press'])
+
+
+### DELETE THE SW
+#d['rho'] = d['rho']*d['r0']
+#d['press'] = d['press']*d['r0']
     
 #################################################################
 start_rt = time.time()

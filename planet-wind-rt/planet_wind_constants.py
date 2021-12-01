@@ -89,8 +89,8 @@ cs3=0.059902*np.pi*4.8032e-10*4.8032e-10/(9.1e-28*c.c)
 #print cs1, cs2, cs3
 
 # limb darkening coeffs
-ld1 = 0.034943203                
-ld2 = 0.37691500
+ld1 = 0.28 #0.034943203                
+ld2 = 0.25  #0.37691500
 ###############################################################
 # wavelength (angstroms) and frequency (Hz) grids 
 lamb = np.linspace(10827.0, 10833.0, 400)

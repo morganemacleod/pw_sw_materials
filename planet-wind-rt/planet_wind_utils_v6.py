@@ -155,7 +155,7 @@ def read_data_for_rt(fn,orb,
                  x1_min=x1_min,x1_max=x1_max,
                  x2_min=x2_min,x2_max=x2_max,
                  x3_min=x3_min,x3_max=x3_max,
-                 quantities=['rho','press','vel1','vel2','vel3']) # approximate arrays by subsampling if level < max
+                 quantities=['rho','press','vel1','vel2','vel3','r0']) # approximate arrays by subsampling if level < max
     print(" ...file read, constructing arrays")
     print(" ...gamma=",gamma)
 
@@ -290,7 +290,7 @@ def cart_to_polar(x,y,z):
     return phi,th,r
 
 
-def get_ray(planet_pos, ydart, zdart, azim_angle, pol_angle, rstar, npoints, inner_lim,outer_lim):
+def get_ray(planet_pos, ydart, zdart, azim_angle, pol_angle, rstar, rplanet, fstep, inner_lim,outer_lim):
 
     xdart = np.sqrt(1.0 - ydart*ydart - zdart*zdart)
     dart1 = np.array([xdart*np.sign(planet_pos[0]), ydart, zdart])*rstar
@@ -309,23 +309,43 @@ def get_ray(planet_pos, ydart, zdart, azim_angle, pol_angle, rstar, npoints, inn
     # ray 
     ray={}
 
-
+    """
+    fmin = 0.5
     #points= np.linspace(3*rstar, outer_lim, npoints) 
     length1 = np.sqrt((inner_lim*np.sign(planet_pos[0]) -planet_pos[0])*(inner_lim*np.sign(planet_pos[0]) -planet_pos[0]))
-    length2 = np.sqrt((outer_lim*np.sign(planet_pos[0]) -planet_pos[0])*(outer_lim*np.sign(planet_pos[0]) -planet_pos[0]) ) 
-    points_aux1 = -1.0*np.logspace(np.log10(length1),10, npoints) + 1.0e10 + abs(planet_pos[0])
-    points_aux2 = np.logspace(10, np.log10(length2), npoints) - 1.0e10 + abs(planet_pos[0])
-    points = np.concatenate([points_aux1, points_aux2])
+    length2 = np.sqrt((outer_lim*np.sign(planet_pos[0]) -planet_pos[0])*(outer_lim*np.sign(planet_pos[0]) -planet_pos[0]))
+    points_aux1 = -1.0*np.logspace(np.log10(length1),np.log10(fmin*rplanet), np.int(npoints/2) ) + fmin*rplanet + abs(planet_pos[0])
+    points_aux2 = np.logspace(np.log10(fmin*rplanet), np.log10(length2), np.int(npoints/2)  ) - fmin*rplanet + abs(planet_pos[0])
+    #print (points_aux1, points_aux2)
+    points = np.concatenate([points_aux1[0:-1], points_aux2])
     #print points
+    """
 
+    #pxrot = np.matmul(planet_pos,rotz)
+    #print("planet_pos =",planet_pos,"pxrot = ",pxrot)
+    
+
+    points = [inner_lim]
+    while(points[-1] < outer_lim):
+        x = points[-1]*np.cos(azim_angle)*np.cos(pol_angle) + origin[0]
+        y = points[-1]*np.sin(azim_angle)*np.cos(pol_angle) + origin[1]
+        z = points[-1]*np.sin(pol_angle) + origin[2]
+        dpl = np.sqrt((x-planet_pos[0])**2 + (y-planet_pos[1])**2 + (z-planet_pos[2])**2 )
+        points.append(points[-1] + fstep*dpl)
+        
+
+    points = np.array(points)
+        
     ray['dl'] = points[1:]-points[0:-1]
     ray['l'] = 0.5*(points[1:]+points[0:-1])
     ray['x'] = ray['l']*np.cos(azim_angle)*np.cos(pol_angle) + origin[0] 
     ray['y'] = ray['l']*np.sin(azim_angle)*np.cos(pol_angle) + origin[1]
     ray['z'] = ray['l']*np.sin(pol_angle) + origin[2]
-    #print points
-
+    #print (ray['x'],ray['y'])
+    
     # spherical polar
     ray['phi'],ray['theta'],ray['r'] = cart_to_polar(ray['x'],ray['y'],ray['z'])
+
+    print(" ... ray has ",len(ray['r']),"points")
     
     return ray
